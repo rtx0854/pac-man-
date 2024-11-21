@@ -1,0 +1,100 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class PacmanGame extends JPanel implements ActionListener, KeyListener {
+    private int pacmanX = 100, pacmanY = 100, pacmanSpeed = 5;
+    private int foodX = 200, foodY = 200;
+    private int ghostX = 300, ghostY = 300, ghostSpeed = 3;
+    private int score = 0;
+    private Timer timer;
+
+    public PacmanGame() {
+        setFocusable(true);
+        addKeyListener(this);
+        timer = new Timer(30, this);
+        timer.start();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        setBackground(Color.BLACK);
+
+        // Dibujar Pac-Man
+        g.setColor(Color.YELLOW);
+        g.fillArc(pacmanX, pacmanY, 30, 30, 30, 300);
+
+        // Dibujar comida
+        g.setColor(Color.WHITE);
+        g.fillOval(foodX, foodY, 10, 10);
+
+        // Dibujar fantasma
+        g.setColor(Color.RED);
+        g.fillRect(ghostX, ghostY, 30, 30);
+
+        // Dibujar puntaje
+        g.setColor(Color.WHITE);
+        g.drawString("Puntaje: " + score, 10, 20);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        moveGhost();
+
+        // Colisión con comida
+        if (new Rectangle(pacmanX, pacmanY, 30, 30).intersects(new Rectangle(foodX, foodY, 10, 10))) {
+            score++;
+            foodX = (int) (Math.random() * getWidth());
+            foodY = (int) (Math.random() * getHeight());
+        }
+
+        // Colisión con fantasma
+        if (new Rectangle(pacmanX, pacmanY, 30, 30).intersects(new Rectangle(ghostX, ghostY, 30, 30))) {
+            JOptionPane.showMessageDialog(this, "¡Game Over! Puntaje: " + score);
+            System.exit(0);
+        }
+
+        repaint();
+    }
+
+    private void moveGhost() {
+        if (ghostX < pacmanX) ghostX += ghostSpeed;
+        else if (ghostX > pacmanX) ghostX -= ghostSpeed;
+
+        if (ghostY < pacmanY) ghostY += ghostSpeed;
+        else if (ghostY > pacmanY) ghostY -= ghostSpeed;
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP -> pacmanY -= pacmanSpeed;
+            case KeyEvent.VK_DOWN -> pacmanY += pacmanSpeed;
+            case KeyEvent.VK_LEFT -> pacmanX -= pacmanSpeed;
+            case KeyEvent.VK_RIGHT -> pacmanX += pacmanSpeed;
+        }
+
+        // Evitar salir de la pantalla
+        pacmanX = Math.max(0, Math.min(getWidth() - 30, pacmanX));
+        pacmanY = Math.max(0, Math.min(getHeight() - 30, pacmanY));
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Pac-Man Básico");
+        PacmanGame game = new PacmanGame();
+        frame.add(game);
+        frame.setSize(600, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+}
